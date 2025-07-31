@@ -1,0 +1,215 @@
+openapi: 3.0.0
+info:
+  title: LAB3 API
+  version: 1.0.0
+  description: Documentation simple des endpoints REST du projet LAB3
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/v1/products:
+    get:
+      summary: Récupère la liste de tous les produits
+      responses:
+        '200':
+          description: Tableau de produits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Produit'
+              example:
+                - id: 1
+                  nom: "Produit A"
+                  prix: 10.0
+                - id: 2
+                  nom: "Produit B"
+                  prix: 20.0
+    post:
+      summary: Ajoute un nouveau produit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Produit'
+            example:
+              nom: "Produit C"
+              prix: 15.0
+      responses:
+        '201':
+          description: Produit créé
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Produit'
+              example:
+                id: 3
+                nom: "Produit C"
+                prix: 15.0
+  /api/v1/products/{id}:
+    get:
+      summary: Récupère un produit par son identifiant
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Détail du produit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Produit'
+              example:
+                id: 1
+                nom: "Produit A"
+                prix: 10.0
+    delete:
+      summary: Supprime un produit
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Confirmation de suppression
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: "Produit supprimé avec succès"
+  /api/v1/stock:
+    get:
+      summary: Récupère le stock de tous les produits
+      responses:
+        '200':
+          description: Tableau de stocks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Stock'
+              example:
+                - produitId: 1
+                  quantite: 100
+                - produitId: 2
+                  quantite: 50
+  /api/v1/stock/{produitId}:
+    get:
+      summary: Récupère le stock d'un produit spécifique
+      parameters:
+        - in: path
+          name: produitId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Détail du stock
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stock'
+              example:
+                produitId: 1
+                quantite: 100
+  /api/v1/sales:
+    get:
+      summary: Liste toutes les ventes
+      responses:
+        '200':
+          description: Tableau de ventes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sale'
+              example:
+                - id: 1
+                  produitId: 1
+                  quantite: 2
+                  date: "2024-06-01"
+  /api/v1/reports/sales:
+    get:
+      summary: Génère un rapport de ventes consolidé
+      responses:
+        '200':
+          description: Rapport de ventes (totaux, etc.)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaleReport'
+              example:
+                totalVentes: 100
+                totalMontant: 1500.0
+  /api/v1/dashboard:
+    get:
+      summary: Vue d'ensemble du dashboard (statistiques globales)
+      responses:
+        '200':
+          description: Données agrégées (nombre de produits, ventes, stock total, etc.)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nbProduits:
+                    type: integer
+                  nbVentes:
+                    type: integer
+                  stockTotal:
+                    type: integer
+              example:
+                nbProduits: 10
+                nbVentes: 50
+                stockTotal: 500
+components:
+  schemas:
+    Produit:
+      type: object
+      properties:
+        id:
+          type: integer
+        nom:
+          type: string
+        prix:
+          type: number
+          format: float
+    Stock:
+      type: object
+      properties:
+        produitId:
+          type: integer
+        quantite:
+          type: integer
+    Sale:
+      type: object
+      properties:
+        id:
+          type: integer
+        produitId:
+          type: integer
+        quantite:
+          type: integer
+        date:
+          type: string
+          format: date
+    SaleReport:
+      type: object
+      properties:
+        totalVentes:
+          type: integer
+        totalMontant:
+          type: number
+          format: float 
