@@ -1,8 +1,11 @@
 package com.lab5.saga.api;
 
 import com.lab5.saga.domain.OrderRequest;
+import com.lab5.saga.domain.OrderItem;
 import com.lab5.saga.domain.SagaResult;
 import com.lab5.saga.service.SagaOrchestratorService;
+import java.util.Map;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,5 +51,36 @@ public class SagaController {
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("Saga Orchestrator Service is running");
+    }
+    
+    @GetMapping("/status")
+    public ResponseEntity<Object> getStatus() {
+        return ResponseEntity.ok(Map.of(
+            "service", "Saga Orchestrator",
+            "status", "RUNNING",
+            "version", "1.0.0",
+            "endpoints", List.of(
+                "POST /api/v1/sagas/orders - Process order saga",
+                "GET /api/v1/sagas/health - Health check",
+                "GET /api/v1/sagas/status - Service status"
+            ),
+            "timestamp", new java.util.Date()
+        ));
+    }
+    
+    @GetMapping("/test")
+    public ResponseEntity<Object> testSaga() {
+        // Create a test order request
+        OrderRequest testRequest = new OrderRequest();
+        testRequest.setCustomerId(1);
+        testRequest.setCartId(1);
+        testRequest.setItems(List.of(new OrderItem(1, 2)));
+        testRequest.setTotalAmount(5.0);
+        
+        return ResponseEntity.ok(Map.of(
+            "message", "Test saga request created",
+            "testRequest", testRequest,
+            "note", "Use POST /api/v1/sagas/orders to actually process this request"
+        ));
     }
 } 
