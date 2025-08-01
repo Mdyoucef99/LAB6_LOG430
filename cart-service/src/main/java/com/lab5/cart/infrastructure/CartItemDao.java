@@ -32,7 +32,7 @@ public class CartItemDao {
     public void deleteById(int id) throws SQLException { cartItemDao.deleteById(id); }
     public List<CartItem> findByCartId(int cartId) throws SQLException {
         QueryBuilder<CartItem, Integer> qb = cartItemDao.queryBuilder();
-        qb.where().eq("cartId", cartId);
+        qb.where().eq("cart_id", cartId);
         return cartItemDao.query(qb.prepare());
     }
 } 
