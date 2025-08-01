@@ -38,4 +38,6 @@ spring:
         - id: saga-orchestrator
           uri: http://saga-orchestrator:8080
           predicates:
-            - Path=/sagas/**, /api/v1/sagas/** 
+            - Path=/api/v1/sagas/**
+          filters:
+            - StripPrefix=0 
