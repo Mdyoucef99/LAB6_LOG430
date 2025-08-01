@@ -95,4 +95,46 @@ public class CartController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+
+    @PostMapping("/{cartId}/validate")
+    public ResponseEntity<String> validateCart(@PathVariable int cartId) {
+        try {
+            logger.info("Validating cart: {}", cartId);
+            Cart cart = cartDao.findById(cartId);
+            if (cart == null) {
+                logger.warn("Cart {} not found", cartId);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cart not found");
+            }
+            
+            List<CartItem> items = cartItemDao.findByCartId(cartId);
+            if (items == null || items.isEmpty()) {
+                logger.warn("Cart {} is empty", cartId);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cart is empty");
+            }
+            
+            logger.info("Cart {} validated successfully with {} items", cartId, items.size());
+            return ResponseEntity.ok("VALID");
+        } catch (SQLException e) {
+            logger.error("Error validating cart {}: {}", cartId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Validation failed");
+        }
+    }
+
+    @DeleteMapping("/{cartId}/clear")
+    public ResponseEntity<String> clearCart(@PathVariable int cartId) {
+        try {
+            logger.info("Clearing cart: {}", cartId);
+            List<CartItem> items = cartItemDao.findByCartId(cartId);
+            if (items != null) {
+                for (CartItem item : items) {
+                    cartItemDao.deleteById(item.getId());
+                }
+            }
+            logger.info("Cart {} cleared successfully", cartId);
+            return ResponseEntity.ok("CLEARED");
+        } catch (SQLException e) {
+            logger.error("Error clearing cart {}: {}", cartId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Clear failed");
+        }
+    }
 } 

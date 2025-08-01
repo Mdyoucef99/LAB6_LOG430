@@ -218,6 +218,17 @@ services:
       order-db:
         condition: service_healthy
 
+  # Saga Orchestrator Service (no DB needed)
+  saga-orchestrator:
+    build: ./saga-orchestrator-service
+    ports:
+      - "8087:8080"
+    depends_on:
+      - product-service
+      - inventory-service
+      - cart-service
+      - order-service
+
   # API Gateway (no DB needed)
   api-gateway:
     build: ./api-gateway
@@ -230,6 +241,7 @@ services:
       - customer-service
       - cart-service
       - order-service
+      - saga-orchestrator
 
 volumes:
   db_data:

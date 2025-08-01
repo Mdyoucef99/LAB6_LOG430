@@ -34,4 +34,8 @@ spring:
         - id: order-service
           uri: http://order-service:8080
           predicates:
-            - Path=/orders/**, /api/v1/orders/** 
+            - Path=/orders/**, /api/v1/orders/**
+        - id: saga-orchestrator
+          uri: http://saga-orchestrator:8080
+          predicates:
+            - Path=/sagas/**, /api/v1/sagas/** 

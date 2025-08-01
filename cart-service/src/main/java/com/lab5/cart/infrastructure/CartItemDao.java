@@ -29,6 +29,7 @@ public class CartItemDao {
     public List<CartItem> findAll() throws SQLException { return cartItemDao.queryForAll(); }
     public void update(CartItem item) throws SQLException { cartItemDao.update(item); }
     public void delete(CartItem item) throws SQLException { cartItemDao.delete(item); }
+    public void deleteById(int id) throws SQLException { cartItemDao.deleteById(id); }
     public List<CartItem> findByCartId(int cartId) throws SQLException {
         QueryBuilder<CartItem, Integer> qb = cartItemDao.queryBuilder();
         qb.where().eq("cartId", cartId);
