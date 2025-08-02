@@ -1,0 +1,114 @@
+@startuml
+
+' Représentation des utilisateurs
+actor "Client" as client
+
+' Conteneur Docker pour l'API Gateway
+node "Docker Host" {
+  node "api-gateway (container)" {
+    [api-gateway]
+  }
+  node "saga-orchestrator (container)" {
+    [saga-orchestrator]
+  }
+  node "cart-service (container)" {
+    [cart-service]
+  }
+  node "customer-service (container)" {
+    [customer-service]
+  }
+  node "inventory-service (container)" {
+    [inventory-service]
+  }
+  node "order-service (container)" {
+    [order-service]
+  }
+  node "product-service (container)" {
+    [product-service]
+  }
+  node "reporting-service (container)" {
+    [reporting-service]
+  }
+  
+  ' Bases de données multiples (Database-per-Service pattern)
+  node "cart-db (container)" {
+    database "PostgreSQL Cart"
+  }
+  node "customer-db (container)" {
+    database "PostgreSQL Customer"
+  }
+  node "inventory-db (container)" {
+    database "PostgreSQL Inventory"
+  }
+  node "order-db (container)" {
+    database "PostgreSQL Order"
+  }
+  node "product-db (container)" {
+    database "PostgreSQL Product"
+  }
+  node "reporting-db (container)" {
+    database "PostgreSQL Reporting"
+  }
+  
+  ' Monitoring
+  node "prometheus (container)" {
+    [Prometheus]
+  }
+  node "grafana (container)" {
+    [Grafana]
+  }
+}
+
+' Flux de communication - API Gateway
+client --> [api-gateway]
+[api-gateway] --> [cart-service] : REST
+[api-gateway] --> [customer-service] : REST
+[api-gateway] --> [inventory-service]: REST
+[api-gateway] --> [order-service]: REST
+[api-gateway] --> [product-service]: REST
+[api-gateway] --> [reporting-service]: REST
+[api-gateway] --> [saga-orchestrator]: REST
+
+' Flux de communication - Saga Orchestrator
+[saga-orchestrator] --> [cart-service] : REST 
+[saga-orchestrator] --> [inventory-service]: REST 
+[saga-orchestrator] --> [order-service]: REST 
+
+' Connexions aux bases de données (Database-per-Service)
+[cart-service] --> [PostgreSQL Cart]: JDBC
+[customer-service] --> [PostgreSQL Customer]: JDBC
+[inventory-service] --> [PostgreSQL Inventory]: JDBC
+[order-service] --> [PostgreSQL Order]: JDBC
+[product-service] --> [PostgreSQL Product]: JDBC
+[reporting-service] --> [PostgreSQL Reporting]: JDBC
+
+' Monitoring - Prometheus collecte les métriques
+[Prometheus] --> [cart-service] 
+[Prometheus] --> [customer-service] 
+[Prometheus] --> [inventory-service] 
+[Prometheus] --> [order-service]
+[Prometheus] --> [product-service] 
+[Prometheus] --> [reporting-service]
+[Prometheus] --> [saga-orchestrator]
+
+' Grafana utilise Prometheus comme datasource
+[Grafana] --> [Prometheus]: DataSource
+
+' Note sur le pattern Saga
+note right of [saga-orchestrator]
+  **Saga Orchestrator**
+  - Orchestration synchrone
+  - Gestion des compensations
+  - Métriques Prometheus
+end note
+
+' Note sur le pattern Database-per-Service
+note right of [PostgreSQL Cart]
+  **Database-per-Service Pattern**
+  - Chaque service a sa propre DB
+  - Isolation des données
+  - Indépendance de déploiement
+  - Pas de couplage entre services
+end note
+
+@enduml

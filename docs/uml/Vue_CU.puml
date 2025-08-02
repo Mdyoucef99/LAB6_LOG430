@@ -1,0 +1,52 @@
+@startuml
+left to right direction
+
+actor Client
+actor "Admin" as Admin
+
+package "Cart Service" {
+  usecase "Créer un panier" as UC1
+  usecase "Ajouter un produit au panier" as UC2
+  usecase "Retirer un produit du panier" as UC3
+  usecase "Voir le panier" as UC4
+}
+
+package "Customer Service" {
+  usecase "Créer un compte client" as UC5
+  usecase "Mettre à jour profil client" as UC6
+  usecase "Consulter profil client" as UC7
+}
+
+package "Product Service" {
+  usecase "Consulter catalogue produits" as UC8
+  usecase "Consulter détails produit" as UC9
+}
+
+package "Inventory Service" {
+  usecase "Consulter stock magasin" as UC10
+  usecase "Mettre à jour stock" as UC11
+}
+
+package "Reporting Service" {
+  usecase "Consulter rapport de ventes" as UC12
+  usecase "Consulter rapport de stock" as UC13
+}
+
+Client --> UC1
+Client --> UC2
+Client --> UC3
+Client --> UC4
+Client --> UC5
+Client --> UC6
+Client --> UC7
+Client --> UC8
+Client --> UC9
+Client --> UC10
+Client --> UC12
+Client --> UC13
+
+Admin --> UC11
+Admin --> UC12
+Admin --> UC13
+
+@enduml

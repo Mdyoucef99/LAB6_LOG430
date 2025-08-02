@@ -1,0 +1,44 @@
+@startuml
+title Product Service - Class Diagram
+package "product-service" {
+  class Produit {
+    +getId(): int
+    +getNom(): String
+    +getCategorie(): String
+    +getPrix(): double
+    +getQuantite(): int
+    +setQuantite(int): void
+    +setNom(String): void
+    +setCategorie(String): void
+    +setPrix(double): void
+    +toString(): String
+  }
+
+  class ProduitDao {
+    +getDao(): Dao
+    +ajouterProduit(Produit): void
+    +rechercherParNom(String): List<Produit>
+    +rechercherParCategorie(String): List<Produit>
+    +rechercherParId(int): Produit
+    +enregistrerVente(int, int): void
+    +annulerVente(int, int): void
+    +getInventaire(): List<Produit>
+  }
+
+  class ProduitRestController {
+    +getAll(): ResponseEntity<List<Produit>>
+    +getById(int): ResponseEntity<Produit>
+    +create(Produit): ResponseEntity<Produit>
+    +update(int, Produit): ResponseEntity<Produit>
+    +delete(int): ResponseEntity<Void>
+  }
+
+  class ProductApplication {
+    +main(String[]): void
+  }
+
+  ProduitDao --> Produit
+  ProduitRestController --> ProduitDao
+  ProductApplication ..> ProduitRestController
+}
+@enduml

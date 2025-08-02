@@ -1,0 +1,122 @@
+@startuml
+' Diagramme de packages pour l'architecture microservices avec le package application
+
+package "cart-service" {
+  package "domain" {
+    class Cart
+    class CartItem
+    Cart "1" -- "0..*" CartItem
+  }
+  package "infrastructure" {
+    class CartDao
+    class CartItemDao
+    CartDao ..> Cart
+    CartItemDao ..> CartItem
+  }
+  package "api" {
+    class CartController
+    CartController ..> Cart
+    CartController ..> CartDao
+    CartController ..> CartItem
+    CartController ..> CartItemDao
+  }
+  package "application" {
+    class CartApplication
+  }
+}
+
+package "customer-service" {
+  package "domain" {
+    class Customer
+  }
+  package "infrastructure" {
+    class CustomerDao
+    CustomerDao ..> Customer
+  }
+  package "api" {
+    class CustomerRestController
+    CustomerRestController ..> Customer
+    CustomerRestController ..> CustomerDao
+  }
+  package "application" {
+    class CustomerApplication
+  }
+}
+
+package "inventory-service" {
+  package "domain" {
+    class Produit
+    class Stock
+    class Store
+    Stock "*" -- "1" Produit
+    Stock "*" -- "1" Store
+  }
+  package "infrastructure" {
+    class StockDao
+    class StoreDao
+    StockDao ..> Stock
+    StoreDao ..> Store
+  }
+  package "api" {
+    class StockRestController
+    StockRestController ..> Stock
+    StockRestController ..> StockDao
+  }
+  package "application" {
+    class InventoryApplication
+  }
+}
+
+package "product-service" {
+  package "domain" {
+    class Produit
+  }
+  package "infrastructure" {
+    class ProduitDao
+    ProduitDao ..> Produit
+  }
+  package "api" {
+    class ProduitRestController
+    ProduitRestController ..> Produit
+    ProduitRestController ..> ProduitDao
+  }
+  package "application" {
+    class ProductApplication
+  }
+}
+
+package "reporting-service" {
+  package "domain" {
+    class Produit
+    class Sale
+    class SaleReport
+    class Store
+    Sale "*" -- "1" Produit
+    Sale "*" -- "1" Store
+    SaleReport "*" -- "1" Store
+  }
+  package "infrastructure" {
+    class ProduitDao
+    class SaleDao
+    class StoreDao
+    ProduitDao ..> Produit
+    SaleDao ..> Sale
+    StoreDao ..> Store
+  }
+  package "api" {
+    class ReportRestController
+    ReportRestController ..> SaleReport
+    ReportRestController ..> SaleDao
+    ReportRestController ..> ProduitDao
+    ReportRestController ..> StoreDao
+  }
+  package "application" {
+    class ReportingApplication
+  }
+}
+
+package "api-gateway" {
+  class ApiGatewayApplication
+}
+
+@enduml
