@@ -24,12 +24,16 @@ public class EventConsumer {
     }
     
     @RabbitListener(queues = RabbitMQConfig.NOTIFICATION_QUEUE)
-    public void handleEvent(Object event) {
+    public void handleEvent(String eventJson) {
         try {
-            logger.info("Received event of type: {}", event.getClass().getSimpleName());
+            logger.info("Received raw event JSON: {}", eventJson);
             
-            // Create a BaseEvent manually from the raw event data
-            BaseEvent baseEvent = createBaseEventFromRaw(event);
+            // Parse JSON directly to Map
+            @SuppressWarnings("unchecked")
+            Map<String, Object> eventMap = objectMapper.readValue(eventJson, Map.class);
+            
+            // Create a BaseEvent manually from the map
+            BaseEvent baseEvent = createBaseEventFromMap(eventMap);
             
             logger.info("Received event: {} - Type: {}", baseEvent.getEventId(), baseEvent.getEventType());
             
@@ -46,11 +50,8 @@ public class EventConsumer {
         }
     }
     
-    private BaseEvent createBaseEventFromRaw(Object event) {
+    private BaseEvent createBaseEventFromMap(Map<String, Object> eventMap) {
         try {
-            // Convert to Map first to handle the type conversion
-            @SuppressWarnings("unchecked")
-            Map<String, Object> eventMap = objectMapper.convertValue(event, Map.class);
             
             BaseEvent baseEvent = new BaseEvent();
             baseEvent.setEventId((String) eventMap.get("eventId"));
@@ -111,7 +112,7 @@ public class EventConsumer {
             return baseEvent;
             
         } catch (Exception e) {
-            logger.error("Error creating BaseEvent from raw event: {}", e.getMessage(), e);
+            logger.error("Error creating BaseEvent from event map: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to create BaseEvent", e);
         }
     }
