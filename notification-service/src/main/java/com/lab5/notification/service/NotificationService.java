@@ -27,6 +27,9 @@ public class NotificationService {
                 case "CartCleared":
                     sendCartClearedNotification(event);
                     break;
+                case "CartModified":
+                    sendCartModifiedNotification(event);
+                    break;
                 case "CommandeCreee":
                     sendOrderCreatedNotification(event);
                     break;
@@ -89,6 +92,25 @@ public class NotificationService {
         sendEmailNotification(
             "customer" + event.getCustomerId() + "@example.com",
             "Panier vidé",
+            message
+        );
+    }
+    
+    private void sendCartModifiedNotification(BaseEvent event) {
+        String message = String.format(
+            " Panier modifié\n" +
+            "Client: %d\n" +
+            "Panier: %d\n" +
+            "Heure: %s",
+            event.getCustomerId(),
+            event.getCartId(),
+            event.getTimestamp().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"))
+        );
+        
+        sendSlackNotification(message);
+        sendEmailNotification(
+            "customer" + event.getCustomerId() + "@example.com",
+            "Panier modifié",
             message
         );
     }

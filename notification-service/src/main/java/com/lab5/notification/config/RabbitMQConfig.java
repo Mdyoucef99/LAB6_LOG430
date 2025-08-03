@@ -40,6 +40,27 @@ public class RabbitMQConfig {
     }
 
     // Notification Queue
+    // Exchange declarations
+    @Bean
+    public TopicExchange cartEventsExchange() {
+        return new TopicExchange(CART_EVENTS_EXCHANGE);
+    }
+
+    @Bean
+    public TopicExchange orderEventsExchange() {
+        return new TopicExchange(ORDER_EVENTS_EXCHANGE);
+    }
+
+    @Bean
+    public TopicExchange inventoryEventsExchange() {
+        return new TopicExchange(INVENTORY_EVENTS_EXCHANGE);
+    }
+
+    @Bean
+    public TopicExchange sagaEventsExchange() {
+        return new TopicExchange(SAGA_EVENTS_EXCHANGE);
+    }
+
     @Bean
     public Queue notificationQueue() {
         return new Queue(NOTIFICATION_QUEUE, true);
