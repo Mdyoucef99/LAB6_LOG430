@@ -15,9 +15,8 @@ public class NotificationService {
     
     public void processEvent(BaseEvent event) {
         try {
-            // Log the event in structured JSON format
-            String eventJson = objectMapper.writeValueAsString(event);
-            logger.info("Processing event: {}", eventJson);
+            logger.info("Processing event: {} - Type: {} - Customer: {}", 
+                event.getEventId(), event.getEventType(), event.getCustomerId());
             
             // Process based on event type
             switch (event.getEventType()) {
