@@ -47,7 +47,7 @@ public class NotificationService {
     
     private void sendArticleAddedNotification(BaseEvent event) {
         String message = String.format(
-            "📦 Article ajouté au panier\n" +
+            " Article ajouté au panier\n" +
             "Client: %d\n" +
             "Panier: %d\n" +
             "Produit: %s (ID: %d)\n" +
@@ -76,7 +76,7 @@ public class NotificationService {
     
     private void sendCartClearedNotification(BaseEvent event) {
         String message = String.format(
-            "🧹 Panier vidé\n" +
+            " Panier vidé\n" +
             "Client: %d\n" +
             "Panier: %d\n" +
             "Heure: %s",
@@ -95,7 +95,7 @@ public class NotificationService {
     
     private void sendOrderCreatedNotification(BaseEvent event) {
         String message = String.format(
-            "🛒 Commande créée\n" +
+            " Commande créée\n" +
             "Client: %d\n" +
             "Commande: %d\n" +
             "Montant: %.2f€\n" +
@@ -116,7 +116,7 @@ public class NotificationService {
     
     private void sendOrderConfirmedNotification(BaseEvent event) {
         String message = String.format(
-            "✅ Commande confirmée\n" +
+            " Commande confirmée\n" +
             "Client: %d\n" +
             "Commande: %d\n" +
             "Montant: %.2f€\n" +
