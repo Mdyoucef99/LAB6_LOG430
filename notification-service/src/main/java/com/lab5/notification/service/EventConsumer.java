@@ -25,7 +25,7 @@ public class EventConsumer {
         this.notificationService = notificationService;
     }
     
-    @RabbitListener(queues = RabbitMQConfig.NOTIFICATION_QUEUE)
+    @RabbitListener(queues = RabbitMQConfig.NOTIFICATION_QUEUE, containerFactory = "rawMessageListenerContainerFactory")
     public void handleEvent(Message message) {
         try {
             // Extract JSON from message body (with charset)
