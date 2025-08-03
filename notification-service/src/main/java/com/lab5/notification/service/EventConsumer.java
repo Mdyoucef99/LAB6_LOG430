@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Map;
 import org.springframework.amqp.core.Message;
 
@@ -103,7 +104,9 @@ public class EventConsumer {
             Object timestamp = eventMap.get("timestamp");
             if (timestamp != null) {
                 if (timestamp instanceof String) {
-                    baseEvent.setTimestamp(LocalDateTime.parse((String) timestamp));
+                    // Parse ISO timestamp with timezone and convert to LocalDateTime
+                    OffsetDateTime offsetDateTime = OffsetDateTime.parse((String) timestamp);
+                    baseEvent.setTimestamp(offsetDateTime.toLocalDateTime());
                 } else if (timestamp instanceof LocalDateTime) {
                     baseEvent.setTimestamp((LocalDateTime) timestamp);
                 }
