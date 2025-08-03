@@ -3,7 +3,7 @@ version: '3.8'
 services:
   product-db:
     image: postgres:16
-    container_name: lab6_product_db
+    container_name: lab7_product_db
     environment:
       POSTGRES_DB: product_db
       POSTGRES_USER: product_user
@@ -37,7 +37,7 @@ services:
 
   inventory-db:
     image: postgres:16
-    container_name: lab6_inventory_db
+    container_name: lab7_inventory_db
     environment:
       POSTGRES_DB: inventory_db
       POSTGRES_USER: inventory_user
@@ -71,7 +71,7 @@ services:
 
   reporting-db:
     image: postgres:16
-    container_name: lab6_reporting_db
+    container_name: lab7_reporting_db
     environment:
       POSTGRES_DB: reporting_db
       POSTGRES_USER: reporting_user
@@ -117,7 +117,7 @@ services:
 
   customer-db:
     image: postgres:16
-    container_name: lab6_customer_db
+    container_name: lab7_customer_db
     environment:
       POSTGRES_DB: customer_db
       POSTGRES_USER: customer_user
@@ -151,7 +151,7 @@ services:
 
   cart-db:
     image: postgres:16
-    container_name: lab6_cart_db
+    container_name: lab7_cart_db
     environment:
       POSTGRES_DB: cart_db
       POSTGRES_USER: cart_user
@@ -185,7 +185,7 @@ services:
 
   order-db:
     image: postgres:16
-    container_name: lab6_order_db
+    container_name: lab7_order_db
     environment:
       POSTGRES_DB: order_db
       POSTGRES_USER: order_user
@@ -197,6 +197,25 @@ services:
       - ./db/order-init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U order_user -d order_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Event Store Database
+  event-store-db:
+    image: postgres:16
+    container_name: lab7_event_store_db
+    environment:
+      POSTGRES_DB: event_store_db
+      POSTGRES_USER: event_store_user
+      POSTGRES_PASSWORD: event_store_password
+    ports:
+      - "5438:5432"
+    volumes:
+      - event_store_db_data:/var/lib/postgresql/data
+      - ./db/event-store-init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U event_store_user -d event_store_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -228,6 +247,15 @@ services:
       - inventory-service
       - cart-service
       - order-service
+      - rabbitmq
+
+  # Notification Service (no DB needed)
+  notification-service:
+    build: ./notification-service
+    ports:
+      - "8088:8088"
+    depends_on:
+      - rabbitmq
 
   # API Gateway (no DB needed)
   api-gateway:
@@ -242,11 +270,30 @@ services:
       - cart-service
       - order-service
       - saga-orchestrator
+      - notification-service
+
+  # Message Broker
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: lab7_rabbitmq
+    ports:
+      - "5672:5672"   # AMQP port
+      - "15672:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   # Monitoring Services
   prometheus:
     image: prom/prometheus:latest
-    container_name: lab6_prometheus
+    container_name: lab7_prometheus
     ports:
       - "9090:9090"
     volumes:
@@ -262,7 +309,7 @@ services:
 
   grafana:
     image: grafana/grafana:latest
-    container_name: lab6_grafana
+    container_name: lab7_grafana
     ports:
       - "3000:3000"
     environment:
@@ -282,5 +329,7 @@ volumes:
   order_db_data:
   customer_db_data:
   cart_db_data:
+  event_store_db_data:
   prometheus_data:
-  grafana_data: 
+  grafana_data:
+  rabbitmq_data: 

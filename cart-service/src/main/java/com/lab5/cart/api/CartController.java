@@ -4,6 +4,7 @@ import com.lab5.cart.infrastructure.CartDao;
 import com.lab5.cart.infrastructure.CartItemDao;
 import com.lab5.cart.domain.Cart;
 import com.lab5.cart.domain.CartItem;
+import com.lab5.cart.service.EventPublisherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,12 +19,14 @@ import org.slf4j.LoggerFactory;
 public class CartController {
     private final CartDao cartDao;
     private final CartItemDao cartItemDao;
+    private final EventPublisherService eventPublisherService;
     private static final Logger logger = LoggerFactory.getLogger(CartController.class);
 
     @Autowired
-    public CartController(CartDao cartDao, CartItemDao cartItemDao) {
+    public CartController(CartDao cartDao, CartItemDao cartItemDao, EventPublisherService eventPublisherService) {
         this.cartDao = cartDao;
         this.cartItemDao = cartItemDao;
+        this.eventPublisherService = eventPublisherService;
     }
 
     @GetMapping
@@ -75,6 +78,20 @@ public class CartController {
             logger.info("Attempting to add item to cart {}: productId={}, quantity={}", cartId, item.getProductId(), item.getQuantity());
             CartItem newItem = new CartItem(cartId, item.getProductId(), item.getQuantity());
             cartItemDao.create(newItem);
+            
+            // Publish ArticleAjoute event
+            Cart cart = cartDao.findById(cartId);
+            if (cart != null) {
+                eventPublisherService.publishArticleAdded(
+                    cartId, 
+                    item.getProductId(), 
+                    "Product-" + item.getProductId(), // TODO: Get real product name
+                    item.getQuantity(), 
+                    0.0, // TODO: Get real price
+                    cart.getCustomerId()
+                );
+            }
+            
             logger.info("Successfully added item to cart {} with item ID: {}", cartId, newItem.getId());
             return ResponseEntity.status(HttpStatus.CREATED).body(newItem);
         } catch (SQLException e) {
@@ -130,6 +147,13 @@ public class CartController {
                     cartItemDao.deleteById(item.getId());
                 }
             }
+            
+            // Publish CartCleared event
+            Cart cart = cartDao.findById(cartId);
+            if (cart != null) {
+                eventPublisherService.publishCartCleared(cartId, cart.getCustomerId());
+            }
+            
             logger.info("Cart {} cleared successfully", cartId);
             return ResponseEntity.ok("CLEARED");
         } catch (SQLException e) {
