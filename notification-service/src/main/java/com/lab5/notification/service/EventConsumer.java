@@ -24,6 +24,9 @@ public class EventConsumer {
     @RabbitListener(queues = RabbitMQConfig.NOTIFICATION_QUEUE)
     public void handleEvent(Object event) {
         try {
+            String eventJson = objectMapper.writeValueAsString(event);
+            logger.info("Received raw event: {}", eventJson);
+            
             // Convert the event to BaseEvent for processing
             BaseEvent baseEvent = objectMapper.convertValue(event, BaseEvent.class);
             
