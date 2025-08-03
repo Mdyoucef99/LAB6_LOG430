@@ -26,9 +26,7 @@ public class EventConsumer {
     @RabbitListener(queues = RabbitMQConfig.NOTIFICATION_QUEUE)
     public void handleEvent(Object event) {
         try {
-            // Log the raw event first
-            String eventJson = objectMapper.writeValueAsString(event);
-            logger.info("Received raw event: {}", eventJson);
+            logger.info("Received event of type: {}", event.getClass().getSimpleName());
             
             // Create a BaseEvent manually from the raw event data
             BaseEvent baseEvent = createBaseEventFromRaw(event);
