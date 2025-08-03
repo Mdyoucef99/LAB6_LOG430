@@ -85,6 +85,49 @@ package "product-service" {
   }
 }
 
+package "order-service" {
+  package "domain" {
+    class Order
+  }
+  package "infrastructure" {
+    class OrderDao
+    OrderDao ..> Order
+  }
+  package "api" {
+    class OrderController
+    OrderController ..> Order
+    OrderController ..> OrderDao
+  }
+  package "application" {
+    class OrderApplication
+  }
+}
+
+package "saga-orchestrator-service" {
+  package "domain" {
+    class SagaState
+    class OrderRequest
+    class OrderItem
+    class SagaResult
+    OrderRequest "1" -- "0..*" OrderItem
+  }
+  package "service" {
+    class SagaOrchestratorService
+    SagaOrchestratorService ..> OrderRequest
+    SagaOrchestratorService ..> SagaResult
+    SagaOrchestratorService ..> SagaState
+  }
+  package "api" {
+    class SagaController
+    SagaController ..> SagaOrchestratorService
+    SagaController ..> OrderRequest
+    SagaController ..> SagaResult
+  }
+  package "application" {
+    class SagaApplication
+  }
+}
+
 package "reporting-service" {
   package "domain" {
     class Produit
@@ -118,5 +161,10 @@ package "reporting-service" {
 package "api-gateway" {
   class ApiGatewayApplication
 }
+
+' Relations entre services pour la saga
+SagaOrchestratorService ..> CartController : REST calls
+SagaOrchestratorService ..> StockRestController : REST calls
+SagaOrchestratorService ..> OrderController : REST calls
 
 @enduml

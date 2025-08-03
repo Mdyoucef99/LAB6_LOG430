@@ -1,44 +1,38 @@
 @startuml
-title Product Service - Class Diagram
-package "product-service" {
-  class Produit {
-    +getId(): int
-    +getNom(): String
-    +getCategorie(): String
-    +getPrix(): double
-    +getQuantite(): int
-    +setQuantite(int): void
-    +setNom(String): void
-    +setCategorie(String): void
-    +setPrix(double): void
-    +toString(): String
-  }
+title Diagramme Machine d'État
 
-  class ProduitDao {
-    +getDao(): Dao
-    +ajouterProduit(Produit): void
-    +rechercherParNom(String): List<Produit>
-    +rechercherParCategorie(String): List<Produit>
-    +rechercherParId(int): Produit
-    +enregistrerVente(int, int): void
-    +annulerVente(int, int): void
-    +getInventaire(): List<Produit>
-  }
+[*] --> INITIÉE : Demande de Commande Reçue
 
-  class ProduitRestController {
-    +getAll(): ResponseEntity<List<Produit>>
-    +getById(int): ResponseEntity<Produit>
-    +create(Produit): ResponseEntity<Produit>
-    +update(int, Produit): ResponseEntity<Produit>
-    +delete(int): ResponseEntity<Void>
-  }
+INITIÉE --> PANIER_VALIDÉ : Panier Valide
+INITIÉE --> ÉCHOUÉE : Panier Invalide/Vide
 
-  class ProductApplication {
-    +main(String[]): void
-  }
+PANIER_VALIDÉ --> STOCK_RÉSERVÉ : Stock Disponible
+PANIER_VALIDÉ --> ÉCHOUÉE : Stock Insuffisant/Erreur
 
-  ProduitDao --> Produit
-  ProduitRestController --> ProduitDao
-  ProductApplication ..> ProduitRestController
-}
-@enduml
+STOCK_RÉSERVÉ --> COMMANDE_CRÉÉE : Commande Créée avec Succès
+STOCK_RÉSERVÉ --> COMPENSATION_EN_COURS : Échec Création Commande
+
+COMMANDE_CRÉÉE --> PANIER_VIDÉ : Panier Vidé avec Succès
+COMMANDE_CRÉÉE --> COMPENSATION_EN_COURS : Échec Vidage Panier
+
+PANIER_VIDÉ --> TERMINÉE : Saga Terminée avec Succès
+
+COMPENSATION_EN_COURS --> STOCK_LIBÉRÉ : Stock Libéré avec Succès
+COMPENSATION_EN_COURS --> COMPENSATION_ÉCHOUÉE : Échec Libération Stock
+
+STOCK_LIBÉRÉ --> ÉCHOUÉE : Compensation Terminée
+COMPENSATION_ÉCHOUÉE --> ÉCHOUÉE : Intervention Manuelle Requise
+
+TERMINÉE --> [*] : État Final de Succès
+ÉCHOUÉE --> [*] : État Final d'Échec
+
+
+note right of TERMINÉE
+  Commande confirmée
+end note
+
+note right of ÉCHOUÉE
+  Processus arrêté
+end note
+
+@enduml 
