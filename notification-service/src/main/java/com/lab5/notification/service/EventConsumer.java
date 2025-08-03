@@ -22,17 +22,20 @@ public class EventConsumer {
     }
     
     @RabbitListener(queues = RabbitMQConfig.NOTIFICATION_QUEUE)
-    public void handleEvent(BaseEvent event) {
+    public void handleEvent(Object event) {
         try {
-            logger.info("Received event: {} - Type: {}", event.getEventId(), event.getEventType());
+            // Convert the event to BaseEvent for processing
+            BaseEvent baseEvent = objectMapper.convertValue(event, BaseEvent.class);
+            
+            logger.info("Received event: {} - Type: {}", baseEvent.getEventId(), baseEvent.getEventType());
             
             // Process the event
-            notificationService.processEvent(event);
+            notificationService.processEvent(baseEvent);
             
-            logger.info("Successfully processed event: {}", event.getEventId());
+            logger.info("Successfully processed event: {}", baseEvent.getEventId());
             
         } catch (Exception e) {
-            logger.error("Error processing event: {}", event.getEventId(), e);
+            logger.error("Error processing event: {}", e.getMessage(), e);
             // In a real implementation, you might want to send to a dead letter queue
             // or implement retry logic
             throw new RuntimeException("Failed to process event", e);
