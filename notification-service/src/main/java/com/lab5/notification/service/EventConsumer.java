@@ -8,8 +8,10 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Map;
+import org.springframework.amqp.core.Message;
 
 @Service
 public class EventConsumer {
@@ -24,28 +26,26 @@ public class EventConsumer {
     }
     
     @RabbitListener(queues = RabbitMQConfig.NOTIFICATION_QUEUE)
-    public void handleEvent(String eventJson) {
+    public void handleEvent(Message message) {
         try {
+            // Extract JSON from message body (with charset)
+            String eventJson = new String(message.getBody(), StandardCharsets.UTF_8);
             logger.info("Received raw event JSON: {}", eventJson);
-            
+    
             // Parse JSON directly to Map
             @SuppressWarnings("unchecked")
             Map<String, Object> eventMap = objectMapper.readValue(eventJson, Map.class);
-            
+    
             // Create a BaseEvent manually from the map
             BaseEvent baseEvent = createBaseEventFromMap(eventMap);
-            
             logger.info("Received event: {} - Type: {}", baseEvent.getEventId(), baseEvent.getEventType());
-            
+    
             // Process the event
             notificationService.processEvent(baseEvent);
-            
             logger.info("Successfully processed event: {}", baseEvent.getEventId());
-            
+    
         } catch (Exception e) {
             logger.error("Error processing event: {}", e.getMessage(), e);
-            // In a real implementation, you might want to send to a dead letter queue
-            // or implement retry logic
             throw new RuntimeException("Failed to process event", e);
         }
     }
