@@ -29,6 +29,11 @@ public class CartController {
         this.eventPublisherService = eventPublisherService;
     }
 
+    @GetMapping("/health")
+    public ResponseEntity<String> health() {
+        return ResponseEntity.ok("Cart Service is healthy");
+    }
+
     @GetMapping
     public ResponseEntity<List<Cart>> getAllCarts() {
         try {
