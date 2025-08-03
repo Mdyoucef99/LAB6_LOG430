@@ -59,4 +59,9 @@ INSERT INTO cart_items (id, cart_id, product_id, quantity) VALUES
   (11, 8, 2, 1),
   (12, 9, 1, 2),
   (13, 9, 3, 1),
-  (14, 10, 2, 3); 
+  (14, 10, 2, 3);
+
+-- Reset sequences to match the inserted data
+SELECT setval('customers_id_seq', (SELECT MAX(id) FROM customers));
+SELECT setval('carts_id_seq', (SELECT MAX(id) FROM carts));
+SELECT setval('cart_items_id_seq', (SELECT MAX(id) FROM cart_items)); 
