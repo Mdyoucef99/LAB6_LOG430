@@ -210,7 +210,7 @@ services:
       POSTGRES_USER: event_store_user
       POSTGRES_PASSWORD: event_store_password
     ports:
-      - "5438:5432"
+      - "5440:5432"
     volumes:
       - event_store_db_data:/var/lib/postgresql/data
       - ./db/event-store-init.sql:/docker-entrypoint-initdb.d/init.sql
