@@ -1,8 +1,11 @@
 -- Event Store Database Initialization
 
+-- Create sequence for auto-incrementing ID
+CREATE SEQUENCE IF NOT EXISTS events_id_seq;
+
 -- Events table (compatible with ORMLite)
 CREATE TABLE IF NOT EXISTS events (
-    id BIGINT PRIMARY KEY,
+    id BIGINT PRIMARY KEY DEFAULT nextval('events_id_seq'),
     event_id varchar(255) NOT NULL,
     event_type varchar(255) NOT NULL,
     aggregate_id varchar(255) NOT NULL,
