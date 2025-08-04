@@ -82,62 +82,67 @@ public class EventStoreRestController {
         }
     }
     
-    // Reconstituer l'état courant d'un panier
-    @GetMapping("/projections/cart/{cartId}")
-    public ResponseEntity<Map<String, Object>> getCurrentCartState(@PathVariable String cartId) {
+    // Afficher l'état courant d'un objet reconstruit
+    @GetMapping("/current-state/{objectType}/{objectId}")
+    public ResponseEntity<Map<String, Object>> getCurrentState(@PathVariable String objectType, @PathVariable String objectId) {
         try {
-            List<EventStore> events = eventStoreDao.findByAggregateId("cart-" + cartId);
+            String objectKey = objectType + "-" + objectId;
+            List<EventStore> events = eventStoreDao.findByAggregateId(objectKey);
             
             if (events.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
             
             // Reconstituer l'état depuis les événements
-            Map<String, Object> cartState = new HashMap<>();
-            cartState.put("cartId", cartId);
-            cartState.put("items", new HashMap<Integer, Object>());
-            cartState.put("customerId", null);
-            cartState.put("version", 0);
+            Map<String, Object> currentState = new HashMap<>();
+            currentState.put("objectType", objectType);
+            currentState.put("objectId", objectId);
+            currentState.put("version", 0);
             
-            @SuppressWarnings("unchecked")
-            Map<Integer, Object> items = (Map<Integer, Object>) cartState.get("items");
-            
-            for (EventStore event : events) {
-                Map<String, Object> eventData = objectMapper.readValue(event.getEventData(), Map.class);
+            // Handle cart objects
+            if ("cart".equals(objectType)) {
+                currentState.put("items", new HashMap<Integer, Object>());
+                currentState.put("customerId", null);
                 
-                switch (event.getEventType()) {
-                    case "ArticleAjoute":
-                        Integer productId = (Integer) eventData.get("productId");
-                        Integer quantity = (Integer) eventData.get("quantity");
-                        String productName = (String) eventData.get("productName");
-                        Double price = (Double) eventData.get("price");
-                        Integer customerId = (Integer) eventData.get("customerId");
-                        
-                        cartState.put("customerId", customerId);
-                        
-                        Map<String, Object> item = new HashMap<>();
-                        item.put("productId", productId);
-                        item.put("productName", productName);
-                        item.put("quantity", quantity);
-                        item.put("price", price);
-                        
-                        items.put(productId, item);
-                        break;
-                        
-                    case "CartCleared":
-                        items.clear();
-                        break;
+                @SuppressWarnings("unchecked")
+                Map<Integer, Object> items = (Map<Integer, Object>) currentState.get("items");
+                
+                for (EventStore event : events) {
+                    Map<String, Object> eventData = objectMapper.readValue(event.getEventData(), Map.class);
+                    
+                    switch (event.getEventType()) {
+                        case "ArticleAjoute":
+                            Integer productId = (Integer) eventData.get("productId");
+                            Integer quantity = (Integer) eventData.get("quantity");
+                            String productName = (String) eventData.get("productName");
+                            Double price = (Double) eventData.get("price");
+                            Integer customerId = (Integer) eventData.get("customerId");
+                            
+                            currentState.put("customerId", customerId);
+                            
+                            Map<String, Object> item = new HashMap<>();
+                            item.put("productId", productId);
+                            item.put("productName", productName);
+                            item.put("quantity", quantity);
+                            item.put("price", price);
+                            
+                            items.put(productId, item);
+                            break;
+                            
+                        case "CartCleared":
+                            items.clear();
+                            break;
+                    }
+                    currentState.put("version", event.getVersion());
                 }
-                cartState.put("version", event.getVersion());
+                
+                currentState.put("totalItems", items.size());
             }
             
-            cartState.put("totalItems", items.size());
-            cartState.put("lastUpdated", LocalDateTime.now());
-            
-            return ResponseEntity.ok(cartState);
+            return ResponseEntity.ok(currentState);
             
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Error reconstructing cart state: " + e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("error", "Error reconstructing object state: " + e.getMessage()));
         }
     }
 }
