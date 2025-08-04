@@ -30,8 +30,13 @@ public class DatabaseConfig {
     public ConnectionSource connectionSource() throws SQLException {
         connectionSource = new JdbcConnectionSource(databaseUrl, username, password);
         
-        // Créer la table si elle n'existe pas
-        TableUtils.createTableIfNotExists(connectionSource, EventStore.class);
+        // Drop and recreate the table to avoid sequence conflicts
+        try {
+            TableUtils.dropTable(connectionSource, EventStore.class, true);
+        } catch (SQLException e) {
+            // Ignore if table doesn't exist
+        }
+        TableUtils.createTable(connectionSource, EventStore.class);
         
         return connectionSource;
     }

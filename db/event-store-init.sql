@@ -1,8 +1,8 @@
 -- Event Store Database Initialization
 
--- Events table (compatible with JPA entity)
+-- Events table (compatible with ORMLite)
 CREATE TABLE IF NOT EXISTS events (
-    id bigserial PRIMARY KEY,
+    id BIGINT PRIMARY KEY,
     event_id varchar(255) NOT NULL,
     event_type varchar(255) NOT NULL,
     aggregate_id varchar(255) NOT NULL,

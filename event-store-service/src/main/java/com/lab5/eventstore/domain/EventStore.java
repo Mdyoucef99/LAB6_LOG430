@@ -6,7 +6,7 @@ import java.util.Date;
 
 @DatabaseTable(tableName = "events")
 public class EventStore {
-    @DatabaseField(generatedId = true)
+    @DatabaseField(generatedId = true, id = true)
     private Long id;
     
     @DatabaseField(columnName = "event_id", canBeNull = false)
