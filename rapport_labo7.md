@@ -18,7 +18,25 @@ Système e-commerce moderne nécessitant une gestion robuste des transactions di
 5. **Système** vide le panier
 6. **Client** reçoit confirmation
 
+## 2. Vue Cas d'Utilisation
+![Vue contextuelle du projet](docs/uml/Vue_CU.png)
+
+## 3. Vue Logique
+![Vue logique de l'architecture](docs/uml/Vue_logique.png)
+
+## 4. Vue de Déploiement
+![Vue de déploiement](docs/uml/Vue_deploiement.png)
+
+## 5. Vue d'Implémentation
+![Vue d'implémentation](docs/uml/Vue_implementation.png)
+
+## 6. Diagramme de Séquence
+![Diagramme de séquence](docs/uml/Vue_processus.png)
+
+
 ---
+
+## 7. Architecture Événementielle
 
 ### Composants Clés
 
@@ -43,9 +61,24 @@ Système e-commerce moderne nécessitant une gestion robuste des transactions di
 - **Décision locale** : Chaque service décide de ses actions
 - **Compensation** : Gestion automatique des échecs
 
+### Saga Chorégraphiée Implémentée
+
+**Définition :** La saga chorégraphiée coordonne le processus de commande via des événements publiés par chaque service, sans orchestrateur central.
+
+**Étapes de la Saga :**
+1. **Validation du Panier** (cart-service) : Écoute `OrderStartedEvent`, valide le panier, publie `CartValidatedEvent`
+2. **Réservation du Stock** (inventory-service) : Écoute `CartValidatedEvent`, réserve le stock, publie `StockReservedEvent`
+3. **Création de la Commande** (order-service) : Écoute `StockReservedEvent`, crée la commande, publie `OrderCreatedEvent`
+4. **Nettoyage du Panier** (cart-service) : Écoute `OrderCreatedEvent`, vide le panier, publie `CartClearedEvent`
+
+**Gestion des Échecs et Compensation :**
+- **Échec de validation** : `CartValidationFailedEvent` → Arrêt de la saga
+- **Échec de réservation** : `StockReservationFailedEvent` → Compensation automatique
+- **Échec de création** : Compensation automatique du stock réservé
+
 ---
 
-## 4. ADR (Architectural Decision Records)
+## 8. ADR (Architectural Decision Records)
 
 ### ADR-001 : Utilisation de RabbitMQ comme Message Broker
 
@@ -103,7 +136,7 @@ Système e-commerce moderne nécessitant une gestion robuste des transactions di
 ---
 
 
-## 6. Scénario de Test et Endpoints pour Logs
+## 9. Scénario de Test et Endpoints pour Logs
 
 ### Scénario de Test : Processus de Commande Complet
 
@@ -230,7 +263,7 @@ curl -X GET http://localhost:15672/api/queues
 curl -X GET http://localhost:15672/api/exchanges
 ```
 
-## 8. Conclusion
+## 10. Conclusion
 
 Ce laboratoire aura ete tres benefique pour la comprehension de la saga choreographique et les difference entre celui-ci et saga orchestrateur.Je n'ai pas eu aussi le temps d'implementer du UI pour ce projet du au colume des taches qu'il fallait accomplir et le temps que j'avais.
 

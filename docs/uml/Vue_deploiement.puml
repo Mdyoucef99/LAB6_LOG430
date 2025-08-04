@@ -141,7 +141,6 @@ note right of [saga-orchestrator]
   **Saga Orchestrée**
   - Orchestration synchrone via REST
   - Gestion centralisée des compensations
-  - Contrôle du flux de transaction
   - Métriques Prometheus
 end note
 
@@ -158,9 +157,7 @@ end note
 note right of [event-store-service]
   **Event Store**
   - Stockage de tous les événements
-  - Audit trail complet
   - Relecture d'événements
-  - Versioning des agrégats
 end note
 
 @enduml
