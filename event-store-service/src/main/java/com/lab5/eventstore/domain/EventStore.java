@@ -1,6 +1,7 @@
 package com.lab5.eventstore.domain;
 
 import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.table.DatabaseTable;
 import java.time.LocalDateTime;
 
@@ -21,7 +22,7 @@ public class EventStore {
     @DatabaseField(columnName = "event_data", canBeNull = false)
     private String eventData;
     
-    @DatabaseField(columnName = "timestamp", canBeNull = false)
+    @DatabaseField(columnName = "timestamp", canBeNull = false, dataType = DataType.STRING)
     private LocalDateTime timestamp;
     
     @DatabaseField(columnName = "version", canBeNull = false)
