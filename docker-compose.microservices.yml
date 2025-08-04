@@ -220,6 +220,21 @@ services:
       timeout: 5s
       retries: 5
 
+  # Event Store Service
+  event-store-service:
+    build: ./event-store-service
+    ports:
+      - "8089:8089"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://event-store-db:5432/event_store_db
+      SPRING_DATASOURCE_USERNAME: event_store_user
+      SPRING_DATASOURCE_PASSWORD: event_store_password
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      event-store-db:
+        condition: service_healthy
+
   # Order Service
   order-service:
     build: ./order-service
