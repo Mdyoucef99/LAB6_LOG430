@@ -257,16 +257,16 @@ curl -X GET http://localhost:8084/api/v1/events/replay/order/123
 
 ### Endpoints de Monitoring
 
-```bash
-# RabbitMQ Management
-curl -X GET http://localhost:15672/api/queues
-curl -X GET http://localhost:15672/api/exchanges
-```
+
 
 ## 10. Conclusion
 
-Ce laboratoire aura ete tres benefique pour la comprehension de la saga choreographique et les difference entre celui-ci et saga orchestrateur.Je n'ai pas eu aussi le temps d'implementer du UI pour ce projet du au colume des taches qu'il fallait accomplir et le temps que j'avais.
+Ce laboratoire aura été très bénéfique pour la compréhension de la saga chorégraphiée et les différences entre celle-ci et la saga orchestrée. L'architecture implémentée correspond bien à celle visée avec une saga chorégraphiée décentralisée utilisant RabbitMQ pour la communication événementielle.
+
+Cependant, il faut noter qu'il existe encore beaucoup de bugs dans l'implémentation actuelle qui nécessitent d'être corrigés pour un déploiement en production. Ces bugs incluent des problèmes de compilation, des erreurs de configuration RabbitMQ, et des incohérences dans la gestion des événements.
+
+Je n'ai pas eu non plus le temps d'implémenter d'interface utilisateur pour ce projet, du au volume des tâches qu'il fallait accomplir et au temps dont je disposais.
 
 ---
 
-**Note** : Du a un manque de temps je n'ai pas pus implementer le CQRS ajouter les dashboard grafana pour le labo 7 ceux ce trouve dans le rapport du labo 6 pour la saga orchestration. 
+**Note** : Du à un manque de temps, je n'ai pas pu implémenter le CQRS ni ajouter les dashboards Grafana pour le labo 7. Ceux-ci se trouvent dans le rapport du labo 6 pour la saga orchestration. 
