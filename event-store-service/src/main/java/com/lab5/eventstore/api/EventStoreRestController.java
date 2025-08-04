@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -37,8 +37,8 @@ public class EventStoreRestController {
             
             String eventJson = objectMapper.writeValueAsString(eventData);
             
-            EventStore event = new EventStore(eventId, eventType, aggregateId, 
-                                            eventJson, LocalDateTime.now(), version);
+                    EventStore event = new EventStore(eventId, eventType, aggregateId, 
+            eventJson, new Date(), version);
             
             eventStoreDao.create(event);
             return ResponseEntity.ok("Event stored successfully");

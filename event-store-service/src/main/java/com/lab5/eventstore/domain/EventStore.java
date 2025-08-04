@@ -1,9 +1,8 @@
 package com.lab5.eventstore.domain;
 
 import com.j256.ormlite.field.DatabaseField;
-import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.table.DatabaseTable;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @DatabaseTable(tableName = "events")
 public class EventStore {
@@ -22,8 +21,8 @@ public class EventStore {
     @DatabaseField(columnName = "event_data", canBeNull = false)
     private String eventData;
     
-    @DatabaseField(columnName = "timestamp", canBeNull = false, dataType = DataType.STRING)
-    private LocalDateTime timestamp;
+    @DatabaseField(columnName = "timestamp", canBeNull = false)
+    private Date timestamp;
     
     @DatabaseField(columnName = "version", canBeNull = false)
     private Integer version;
@@ -32,7 +31,7 @@ public class EventStore {
     public EventStore() {}
     
     public EventStore(String eventId, String eventType, String aggregateId, 
-                     String eventData, LocalDateTime timestamp, Integer version) {
+                     String eventData, Date timestamp, Integer version) {
         this.eventId = eventId;
         this.eventType = eventType;
         this.aggregateId = aggregateId;
@@ -52,8 +51,8 @@ public class EventStore {
     public void setAggregateId(String aggregateId) { this.aggregateId = aggregateId; }
     public String getEventData() { return eventData; }
     public void setEventData(String eventData) { this.eventData = eventData; }
-    public LocalDateTime getTimestamp() { return timestamp; }
-    public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
+    public Date getTimestamp() { return timestamp; }
+    public void setTimestamp(Date timestamp) { this.timestamp = timestamp; }
     public Integer getVersion() { return version; }
     public void setVersion(Integer version) { this.version = version; }
 }
