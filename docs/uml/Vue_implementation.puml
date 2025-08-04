@@ -1,5 +1,5 @@
 @startuml
-' Diagramme de packages pour l'architecture microservices avec le package application
+' Diagramme de packages pour l'architecture microservices avec saga chorégraphiée
 
 package "cart-service" {
   package "domain" {
@@ -19,6 +19,14 @@ package "cart-service" {
     CartController ..> CartDao
     CartController ..> CartItem
     CartController ..> CartItemDao
+  }
+  package "service" {
+    class CartSagaHandler
+    CartSagaHandler ..> Cart
+    CartSagaHandler ..> CartDao
+  }
+  package "config" {
+    class CartRabbitMQConfig
   }
   package "application" {
     class CartApplication
@@ -62,6 +70,14 @@ package "inventory-service" {
     StockRestController ..> Stock
     StockRestController ..> StockDao
   }
+  package "service" {
+    class InventorySagaHandler
+    InventorySagaHandler ..> Stock
+    InventorySagaHandler ..> StockDao
+  }
+  package "config" {
+    class InventoryRabbitMQConfig
+  }
   package "application" {
     class InventoryApplication
   }
@@ -98,6 +114,14 @@ package "order-service" {
     OrderController ..> Order
     OrderController ..> OrderDao
   }
+  package "service" {
+    class OrderSagaHandler
+    OrderSagaHandler ..> Order
+    OrderSagaHandler ..> OrderDao
+  }
+  package "config" {
+    class OrderRabbitMQConfig
+  }
   package "application" {
     class OrderApplication
   }
@@ -125,6 +149,50 @@ package "saga-orchestrator-service" {
   }
   package "application" {
     class SagaApplication
+  }
+}
+
+package "event-store-service" {
+  package "domain" {
+    class EventStore
+  }
+  package "infrastructure" {
+    class EventStoreDao
+    EventStoreDao ..> EventStore
+  }
+  package "api" {
+    class EventStoreRestController
+    EventStoreRestController ..> EventStore
+    EventStoreRestController ..> EventStoreDao
+  }
+  package "service" {
+    class MetricsService
+    MetricsService ..> EventStore
+  }
+  package "application" {
+    class EventStoreApplication
+  }
+}
+
+package "notification-service" {
+  package "domain" {
+    class BaseEvent
+  }
+  package "service" {
+    class EventConsumer
+    class NotificationService
+    EventConsumer ..> BaseEvent
+    NotificationService ..> BaseEvent
+  }
+  package "config" {
+    class NotificationRabbitMQConfig
+  }
+  package "api" {
+    class NotificationController
+    NotificationController ..> NotificationService
+  }
+  package "application" {
+    class NotificationApplication
   }
 }
 
@@ -162,9 +230,31 @@ package "api-gateway" {
   class ApiGatewayApplication
 }
 
-' Relations entre services pour la saga
+' Relations entre services pour la saga orchestrée (REST)
 SagaOrchestratorService ..> CartController : REST calls
 SagaOrchestratorService ..> StockRestController : REST calls
 SagaOrchestratorService ..> OrderController : REST calls
+
+' Relations pour la saga chorégraphiée (Events via RabbitMQ)
+OrderController ..> CartSagaHandler : OrderStartedEvent
+CartSagaHandler ..> InventorySagaHandler : CartValidatedEvent
+InventorySagaHandler ..> OrderSagaHandler : StockReservedEvent
+OrderSagaHandler ..> CartSagaHandler : OrderCreatedEvent
+
+' Event Store - Stockage de tous les événements
+CartSagaHandler ..> EventStoreRestController : Store events
+InventorySagaHandler ..> EventStoreRestController : Store events
+OrderSagaHandler ..> EventStoreRestController : Store events
+
+' Notification Service - Écoute des événements
+EventConsumer ..> CartSagaHandler : Listen events
+EventConsumer ..> InventorySagaHandler : Listen events
+EventConsumer ..> OrderSagaHandler : Listen events
+
+' Configuration RabbitMQ
+CartRabbitMQConfig ..> CartSagaHandler : Configure queues
+InventoryRabbitMQConfig ..> InventorySagaHandler : Configure queues
+OrderRabbitMQConfig ..> OrderSagaHandler : Configure queues
+NotificationRabbitMQConfig ..> EventConsumer : Configure queues
 
 @enduml

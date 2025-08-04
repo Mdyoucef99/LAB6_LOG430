@@ -8,7 +8,6 @@
     <modules>
         <module>product-service</module>
         <module>inventory-service</module>
-        <module>sales-service</module>
         <module>reporting-service</module>
     </modules>
     <properties>

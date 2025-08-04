@@ -31,10 +31,9 @@ public class OrderSagaHandler {
         logger.info("Order service received stock reserved event - cartId: {}", event.getCartId());
         
         try {
-            // Create the order
-            Order order = new Order();
-            order.setCartId(event.getCartId());
-            order.setStatus("CREATED");
+            // Create the order using cartId as customerId and a default total amount
+            // In a real scenario, we would calculate the total from cart items
+            Order order = new Order(event.getCartId(), 100.0); // Using cartId as customerId, default amount
             orderDao.create(order);
             
             // Publish "order created" event
