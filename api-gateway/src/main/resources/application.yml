@@ -42,6 +42,10 @@ spring:
           filters:
             - StripPrefix=0
         - id: notification-service
-          uri: http://notification-service:8088
+          uri: http://notification-service:8080
           predicates:
-            - Path=/notifications/**, /api/v1/notifications/** 
+            - Path=/notifications/**, /api/v1/notifications/**
+        - id: event-store-service
+          uri: http://event-store-service:8080
+          predicates:
+            - Path=/eventstore/**, /api/v1/eventstore/** 
