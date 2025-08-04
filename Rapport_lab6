@@ -55,7 +55,16 @@ Une plateforme e-commerce permettant aux clients d'ajouter des produits à leur 
 
 **Ordre execution :**
 ```
-[Client] → [Saga Orchestrator] → [Cart Service] → [Inventory Service] → [Order Service] → [Cart Service]
+1. [Client] → [Saga Orchestrator] (initier checkout)
+2. [Saga Orchestrator] → [Cart Service] (valider panier)
+3. [Cart Service] → [Saga Orchestrator] (résultat validation)
+4. [Saga Orchestrator] → [Inventory Service] (réserver stock)
+5. [Inventory Service] → [Saga Orchestrator] (résultat réservation)
+6. [Saga Orchestrator] → [Order Service] (créer commande)
+7. [Order Service] → [Saga Orchestrator] (résultat création)
+8. [Saga Orchestrator] → [Cart Service] (vider panier)
+9. [Cart Service] → [Saga Orchestrator] (résultat vidage)
+10. [Saga Orchestrator] → [Client] (checkout terminé)
 ```
 
 **Gestion des échecs et compensation :**
@@ -91,8 +100,8 @@ Une plateforme e-commerce permettant aux clients d'ajouter des produits à leur 
 - **Action** : Libération du stock réservé via appel REST à inventory-service
 
 ### Gestion des Échecs
-- **Échec précoce** (avant stock réservé) : Arrêt direct de la saga
-- **Échec tardif** (après stock réservé) : Déclenchement de la compensation
+- **Échec** (avant stock réservé) : Arrêt direct de la saga
+- **Échec** (après stock réservé) : Déclenchement de la compensation
 
 
 ## 9. Captures d'écran des dashboards
