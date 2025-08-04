@@ -3,6 +3,7 @@ package com.lab5.order.api;
 import com.lab5.order.domain.Order;
 import com.lab5.order.infrastructure.OrderDao;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,11 +23,13 @@ import org.slf4j.LoggerFactory;
 @Tag(name = "Commandes", description = "API pour la gestion des commandes")
 public class OrderController {
     private final OrderDao orderDao;
+    private final RabbitTemplate rabbitTemplate;
     private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
 
     @Autowired
-    public OrderController(OrderDao orderDao) {
+    public OrderController(OrderDao orderDao, RabbitTemplate rabbitTemplate) {
         this.orderDao = orderDao;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @GetMapping
@@ -99,6 +102,18 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
+    
+    // Simple Choreographed Saga endpoint
+    @PostMapping("/start-saga")
+    public ResponseEntity<String> startChoreographedSaga(@RequestBody SagaRequest request) {
+        logger.info("Starting choreographed saga - cartId: {}", request.getCartId());
+        
+        // Publish "order started" event to trigger the saga
+        OrderStartedEvent event = new OrderStartedEvent(request.getCartId());
+        rabbitTemplate.convertAndSend("saga.events", "order.started", event);
+        
+        return ResponseEntity.ok("Choreographed saga started for cart: " + request.getCartId());
+    }
 
     // Classe de requête pour l'endpoint checkout
     public static class CheckoutRequest {
@@ -110,5 +125,24 @@ public class OrderController {
         
         public void setCustomerId(int customerId) { this.customerId = customerId; }
         public void setTotalAmount(double totalAmount) { this.totalAmount = totalAmount; }
+    }
+    
+    // Simple request for saga
+    public static class SagaRequest {
+        private int cartId;
+        
+        public int getCartId() { return cartId; }
+        public void setCartId(int cartId) { this.cartId = cartId; }
+    }
+    
+    // Simple event class
+    public static class OrderStartedEvent {
+        private int cartId;
+        
+        public OrderStartedEvent() {}
+        public OrderStartedEvent(int cartId) { this.cartId = cartId; }
+        
+        public int getCartId() { return cartId; }
+        public void setCartId(int cartId) { this.cartId = cartId; }
     }
 } 

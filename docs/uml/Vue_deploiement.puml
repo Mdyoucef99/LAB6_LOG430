@@ -8,9 +8,6 @@ node "Docker Host" {
   node "api-gateway (container)" {
     [api-gateway]
   }
-  node "saga-orchestrator (container)" {
-    [saga-orchestrator]
-  }
   node "cart-service (container)" {
     [cart-service]
   }
@@ -28,6 +25,20 @@ node "Docker Host" {
   }
   node "reporting-service (container)" {
     [reporting-service]
+  }
+  node "event-store-service (container)" {
+    [event-store-service]
+  }
+  node "notification-service (container)" {
+    [notification-service]
+  }
+  node "saga-orchestrator (container)" {
+    [saga-orchestrator]
+  }
+  
+  ' Message Broker
+  node "rabbitmq (container)" {
+    [RabbitMQ]
   }
   
   ' Bases de données multiples (Database-per-Service pattern)
@@ -49,6 +60,9 @@ node "Docker Host" {
   node "reporting-db (container)" {
     database "PostgreSQL Reporting"
   }
+  node "event-store-db (container)" {
+    database "PostgreSQL Event Store"
+  }
   
   ' Monitoring
   node "prometheus (container)" {
@@ -61,18 +75,35 @@ node "Docker Host" {
 
 ' Flux de communication - API Gateway
 client --> [api-gateway]
-[api-gateway] --> [cart-service] : REST
-[api-gateway] --> [customer-service] : REST
-[api-gateway] --> [inventory-service]: REST
-[api-gateway] --> [order-service]: REST
-[api-gateway] --> [product-service]: REST
-[api-gateway] --> [reporting-service]: REST
-[api-gateway] --> [saga-orchestrator]: REST
+[api-gateway] --> [cart-service] : REST (8085)
+[api-gateway] --> [customer-service] : REST (8084)
+[api-gateway] --> [inventory-service]: REST (8082)
+[api-gateway] --> [order-service]: REST (8086)
+[api-gateway] --> [product-service]: REST (8081)
+[api-gateway] --> [reporting-service]: REST (8083)
+[api-gateway] --> [saga-orchestrator]: REST (8087)
+[api-gateway] --> [notification-service]: REST (8088)
+[api-gateway] --> [event-store-service]: REST (8089)
 
-' Flux de communication - Saga Orchestrator
-[saga-orchestrator] --> [cart-service] : REST 
-[saga-orchestrator] --> [inventory-service]: REST 
-[saga-orchestrator] --> [order-service]: REST 
+' Flux de communication - Saga Chorégraphiée via RabbitMQ
+[order-service] --> [RabbitMQ] : OrderStartedEvent
+[RabbitMQ] --> [cart-service] : OrderStartedEvent
+[cart-service] --> [RabbitMQ] : CartValidatedEvent
+[RabbitMQ] --> [inventory-service] : CartValidatedEvent
+[inventory-service] --> [RabbitMQ] : StockReservedEvent
+[RabbitMQ] --> [order-service] : StockReservedEvent
+[order-service] --> [RabbitMQ] : OrderCreatedEvent
+[RabbitMQ] --> [cart-service] : OrderCreatedEvent
+[cart-service] --> [RabbitMQ] : CartClearedEvent
+
+' Flux de communication - Saga Orchestrator (REST)
+[saga-orchestrator] --> [cart-service] : REST
+[saga-orchestrator] --> [inventory-service]: REST
+[saga-orchestrator] --> [order-service]: REST
+
+' Event Store - Stockage de tous les événements
+[RabbitMQ] --> [event-store-service] : Tous les événements
+[notification-service] --> [RabbitMQ] : Écoute des événements
 
 ' Connexions aux bases de données (Database-per-Service)
 [cart-service] --> [PostgreSQL Cart]: JDBC
@@ -81,6 +112,7 @@ client --> [api-gateway]
 [order-service] --> [PostgreSQL Order]: JDBC
 [product-service] --> [PostgreSQL Product]: JDBC
 [reporting-service] --> [PostgreSQL Reporting]: JDBC
+[event-store-service] --> [PostgreSQL Event Store]: JDBC
 
 ' Monitoring - Prometheus collecte les métriques
 [Prometheus] --> [cart-service] 
@@ -89,16 +121,27 @@ client --> [api-gateway]
 [Prometheus] --> [order-service]
 [Prometheus] --> [product-service] 
 [Prometheus] --> [reporting-service]
+[Prometheus] --> [event-store-service]
+[Prometheus] --> [notification-service]
 [Prometheus] --> [saga-orchestrator]
 
 ' Grafana utilise Prometheus comme datasource
 [Grafana] --> [Prometheus]: DataSource
 
-' Note sur le pattern Saga
+' Note sur les patterns Saga
+note right of [RabbitMQ]
+  **Saga Chorégraphiée**
+  - Communication asynchrone via RabbitMQ
+  - Chaque service publie/écoute des événements
+  - Gestion locale des compensations
+  - Découplage maximal
+end note
+
 note right of [saga-orchestrator]
-  **Saga Orchestrator**
-  - Orchestration synchrone
-  - Gestion des compensations
+  **Saga Orchestrée**
+  - Orchestration synchrone via REST
+  - Gestion centralisée des compensations
+  - Contrôle du flux de transaction
   - Métriques Prometheus
 end note
 
@@ -109,6 +152,15 @@ note right of [PostgreSQL Cart]
   - Isolation des données
   - Indépendance de déploiement
   - Pas de couplage entre services
+end note
+
+' Note sur l'Event Store
+note right of [event-store-service]
+  **Event Store**
+  - Stockage de tous les événements
+  - Audit trail complet
+  - Relecture d'événements
+  - Versioning des agrégats
 end note
 
 @enduml

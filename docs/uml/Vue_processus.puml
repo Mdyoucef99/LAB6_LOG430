@@ -1,0 +1,44 @@
+@startuml Saga Chorégraphiée 
+!theme plain
+title Saga Chorégraphiée 
+
+actor Client
+participant "Service Commande" as Order
+participant "Service Panier" as Cart
+participant "Service Inventaire" as Inventory
+participant "RabbitMQ" as MQ
+
+Client -> Order: POST /start-saga {cartId: 1}
+activate Order
+Order -> MQ: OrderStartedEvent
+deactivate Order
+Order -> Client: "Saga démarrée"
+
+MQ -> Cart: OrderStartedEvent
+activate Cart
+Cart -> Cart: Valider le panier
+Cart -> MQ: CartValidatedEvent
+deactivate Cart
+
+MQ -> Inventory: CartValidatedEvent
+activate Inventory
+Inventory -> Inventory: Réserver le stock
+Inventory -> MQ: StockReservedEvent
+deactivate Inventory
+
+MQ -> Order: StockReservedEvent
+activate Order
+Order -> Order: Créer la commande
+Order -> MQ: OrderCreatedEvent
+deactivate Order
+
+MQ -> Cart: OrderCreatedEvent
+activate Cart
+Cart -> Cart: Vider le panier
+Cart -> MQ: CartClearedEvent
+deactivate Cart
+
+note over Client, Cart: Saga terminée avec succès
+note right: Chaque service gère sa propre logique métier\net publie des événements pour que les autres réagissent
+
+@enduml

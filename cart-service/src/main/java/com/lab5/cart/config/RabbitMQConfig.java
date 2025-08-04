@@ -29,6 +29,15 @@ public class RabbitMQConfig {
     public static final String CART_MODIFIED = "cart.modified";
     public static final String CART_EXPIRED = "cart.expired";
     public static final String CART_CLEARED = "cart.cleared";
+    
+    // Saga routing keys
+    public static final String ORDER_STARTED = "order.started";
+    public static final String CART_VALIDATED = "cart.validated";
+    public static final String CART_VALIDATION_FAILED = "cart.validation.failed";
+    public static final String STOCK_RESERVED = "stock.reserved";
+    public static final String STOCK_RESERVATION_FAILED = "stock.reservation.failed";
+    public static final String ORDER_CREATED = "order.created";
+    public static final String CART_CLEARED_SAGA = "cart.cleared";
 
     @Bean
     public MessageConverter jsonMessageConverter() {
@@ -89,6 +98,24 @@ public class RabbitMQConfig {
     public Queue sagaEventsQueue() {
         return new Queue(SAGA_EVENTS_QUEUE, true);
     }
+    
+    // Cart Queue for saga events
+    @Bean
+    public Queue cartQueue() {
+        return new Queue("cart.queue", true);
+    }
+    
+    // Order Queue for saga events
+    @Bean
+    public Queue orderQueue() {
+        return new Queue("order.queue", true);
+    }
+    
+    // Inventory Queue for saga events
+    @Bean
+    public Queue inventoryQueue() {
+        return new Queue("inventory.queue", true);
+    }
 
     // Bindings for Cart Events
     @Bean
@@ -124,5 +151,34 @@ public class RabbitMQConfig {
         return BindingBuilder.bind(cartEventsQueue())
                 .to(cartEventsExchange())
                 .with(CART_CLEARED);
+    }
+    
+    // Saga Event Bindings
+    @Bean
+    public Binding orderStartedBinding() {
+        return BindingBuilder.bind(cartQueue())
+                .to(sagaEventsExchange())
+                .with(ORDER_STARTED);
+    }
+    
+    @Bean
+    public Binding cartValidatedBinding() {
+        return BindingBuilder.bind(inventoryQueue())
+                .to(sagaEventsExchange())
+                .with(CART_VALIDATED);
+    }
+    
+    @Bean
+    public Binding stockReservedBinding() {
+        return BindingBuilder.bind(orderQueue())
+                .to(sagaEventsExchange())
+                .with(STOCK_RESERVED);
+    }
+    
+    @Bean
+    public Binding orderCreatedBinding() {
+        return BindingBuilder.bind(cartQueue())
+                .to(sagaEventsExchange())
+                .with(ORDER_CREATED);
     }
 } 
