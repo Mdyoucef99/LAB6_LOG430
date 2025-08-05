@@ -173,30 +173,24 @@ curl -X POST http://localhost:8080/api/v1/orders/start-saga \
 
 ### Consulter tous les événements
 ```bash
-curl -X GET http://localhost:8089/api/v1/events
+curl -X GET http://localhost:8089/api/v1/eventstore/events
 ```
 
-### Consulter les événements par type
+### Consulter les événements par agrégat
 ```bash
-# Événements de succès
-curl -X GET http://localhost:8089/api/v1/events/type/OrderStartedEvent
-curl -X GET http://localhost:8089/api/v1/events/type/CartValidatedEvent
-curl -X GET http://localhost:8089/api/v1/events/type/StockReservedEvent
-curl -X GET http://localhost:8089/api/v1/events/type/OrderCreatedEvent
-curl -X GET http://localhost:8089/api/v1/events/type/CartClearedEvent
-
-# Événements d'échec
-curl -X GET http://localhost:8089/api/v1/events/type/CartValidationFailedEvent
-curl -X GET http://localhost:8089/api/v1/events/type/StockReservationFailedEvent
+# Événements par agrégat
+curl -X GET http://localhost:8089/api/v1/eventstore/events/aggregate/cart-1
+curl -X GET http://localhost:8089/api/v1/eventstore/events/aggregate/order-1
+curl -X GET http://localhost:8089/api/v1/eventstore/events/aggregate/inventory-1
 ```
 
 ### Relecture d'événements
 ```bash
-# Relecture d'une saga spécifique
-curl -X GET http://localhost:8089/api/v1/events/saga/saga-456
+# Relecture depuis une version
+curl -X GET http://localhost:8089/api/v1/eventstore/events/replay/cart-1?fromVersion=1
 
-# Relecture d'un agrégat
-curl -X GET http://localhost:8089/api/v1/events/replay/order/123
+# Consulter l'état courant d'un objet
+curl -X GET http://localhost:8089/api/v1/eventstore/current-state/cart/1
 ```
 
 ---
@@ -227,7 +221,7 @@ curl http://localhost:8080/api/v1/sagas/test
 curl http://localhost:8080/api/v1/sagas/status
 
 # Event Store (LAB7)
-curl http://localhost:8080/api/v1/events
+curl http://localhost:8080/api/v1/eventstore/events
 
 # Notifications (LAB7)
 curl http://localhost:8080/api/v1/notifications
@@ -251,7 +245,7 @@ curl http://localhost:8085/api/v1/carts
 curl http://localhost:8086/api/v1/orders
 
 # Event Store Service
-curl http://localhost:8089/api/v1/events
+curl http://localhost:8089/api/v1/eventstore/events
 
 # Notification Service
 curl http://localhost:8088/api/v1/notifications

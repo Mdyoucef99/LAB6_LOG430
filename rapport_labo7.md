@@ -189,7 +189,7 @@ curl -X GET http://localhost:8080/api/v1/orders
 
 curl -X GET http://localhost:8080/api/v1/carts/1
 
-curl -X GET http://localhost:8084/api/v1/events
+curl -X GET http://localhost:8089/api/v1/eventstore/events
 ```
 
 #### Phase 3 : Test d'Échec (Compensation)
@@ -230,29 +230,24 @@ curl -X POST http://localhost:8080/api/v1/orders/start-saga \
 #### Phase 5 : Consultation des Événements
 ```bash
 # 11. Consulter tous les événements
-curl -X GET http://localhost:8084/api/v1/events
+curl -X GET http://localhost:8089/api/v1/eventstore/events
 
-# 12. Consulter les événements par type
-curl -X GET http://localhost:8084/api/v1/events/type/OrderStartedEvent
+# 12. Consulter les événements par agrégat
+curl -X GET http://localhost:8089/api/v1/eventstore/events/aggregate/cart-1
 
-curl -X GET http://localhost:8084/api/v1/events/type/CartValidatedEvent
+curl -X GET http://localhost:8089/api/v1/eventstore/events/aggregate/order-1
 
-curl -X GET http://localhost:8084/api/v1/events/type/StockReservedEvent
+curl -X GET http://localhost:8089/api/v1/eventstore/events/aggregate/inventory-1
 
-curl -X GET http://localhost:8084/api/v1/events/type/OrderCreatedEvent
+# 13. Relecture d'événements depuis une version
+curl -X GET http://localhost:8089/api/v1/eventstore/events/replay/cart-1?fromVersion=1
 
-curl -X GET http://localhost:8084/api/v1/events/type/CartClearedEvent
+curl -X GET http://localhost:8089/api/v1/eventstore/events/replay/order-1?fromVersion=1
 
-# 13. Consulter les événements d'échec
-curl -X GET http://localhost:8084/api/v1/events/type/CartValidationFailedEvent
+# 14. Consulter l'état courant d'un objet
+curl -X GET http://localhost:8089/api/v1/eventstore/current-state/cart/1
 
-curl -X GET http://localhost:8084/api/v1/events/type/StockReservationFailedEvent
-
-# 14. Relecture d'une saga spécifique
-curl -X GET http://localhost:8084/api/v1/events/saga/saga-456
-
-# 15. Relecture d'un agrégat
-curl -X GET http://localhost:8084/api/v1/events/replay/order/123
+curl -X GET http://localhost:8089/api/v1/eventstore/current-state/order/1
 ```
 
 ### Endpoints de Monitoring
